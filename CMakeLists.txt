@@ -4,9 +4,10 @@ project(GameProgramingC++ LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-
-add_compile_options(/utf-8)
-add_compile_definitions(UNICODE _UNICODE WIN32_LEAN_AND_MEAN)
+if(MSVC)
+    add_compile_options(/utf-8)
+    add_compile_definitions(UNICODE _UNICODE WIN32_LEAN_AND_MEAN)
+endif()
 
 include(FetchContent)
 FetchContent_Declare(

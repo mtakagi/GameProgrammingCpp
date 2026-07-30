@@ -1,0 +1,44 @@
+# --- CLion / JetBrains ---
+.idea/
+cmake-build-*/
+*.iml
+
+# --- CMake ---
+build/
+out/
+CMakeUserPresets.json
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+install_manifest.txt
+CTestTestfile.cmake
+Testing/
+_deps/
+compile_commands.json
+
+# --- Visual Studio / MSVC ---
+.vs/
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.ilk
+*.pdb
+*.idb
+*.exp
+*.obj
+
+# --- Binaries / libraries ---
+*.exe
+*.dll
+*.lib
+*.a
+*.so
+*.dylib
+
+# --- Windows / OS ---
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store

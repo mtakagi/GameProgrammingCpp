@@ -19,3 +19,4 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(sdl)
 
 add_subdirectory(Chapter01)
+add_subdirectory(Chapter02)

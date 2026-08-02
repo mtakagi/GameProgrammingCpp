@@ -1,8 +1,8 @@
 set(TARGET_NAME Chapter01)
 
 set(SOURCES
-    game.cpp
-    main.cpp
+    Game.cpp
+    Main.cpp
 )
 
 add_executable(${TARGET_NAME} ${SOURCES})

@@ -1,4 +1,4 @@
-#include "game.h"
+#include "Game.h"
 
 constexpr int thickness = 15;
 constexpr float paddleH = 100.0f;

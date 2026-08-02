@@ -58,7 +58,13 @@ function(add_chapter NAME)
                 COMMENT "Copying runtime DLLs to output directory...")
     endif()
 
+    # Assets は .gitignore で除外しているため、クローン直後や CI には存在しない。
     foreach(DIR IN LISTS ARG_ASSET_DIRS)
+        if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${DIR}")
+            message(STATUS "${NAME}: ${DIR} が無いためコピーをスキップします")
+            continue()
+        endif()
+
         add_custom_command(TARGET ${NAME} POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different
                 "${CMAKE_CURRENT_SOURCE_DIR}/${DIR}"

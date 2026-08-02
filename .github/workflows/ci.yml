@@ -20,7 +20,7 @@ jobs:
         os: [windows-latest, ubuntu-latest, macos-latest]
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       # SDL2 をソースからビルドするため、Linux では X11 / Wayland / オーディオの
       # 開発パッケージが必要（無いと構成は通るがビデオドライバが dummy だけになる）

@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "Actor.h"
 #include "Component.h"
 #include "Game.h"

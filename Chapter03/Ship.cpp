@@ -1,6 +1,6 @@
 #include "Game.h"
 #include "Ship.h"
-#include "AnimSpriteComponent.h"
+#include "SpriteComponent.h"
 #include "InputComponent.h"
 #include "Laser.h"
 

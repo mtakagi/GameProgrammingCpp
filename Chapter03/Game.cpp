@@ -3,7 +3,6 @@
 #include "Game.h"
 #include "Actor.h"
 #include "Asteroid.h"
-#include "BGSpriteComponent.h"
 #include "Ship.h"
 #include "SpriteComponent.h"
 

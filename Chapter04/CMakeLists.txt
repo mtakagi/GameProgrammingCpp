@@ -1,0 +1,22 @@
+add_chapter(Chapter04
+        SOURCES
+        Game.cpp
+        Actor.cpp
+        Bullet.cpp
+        Enemy.cpp
+        Grid.cpp
+        Tile.cpp
+        Tower.cpp
+        Component.cpp
+        SpriteComponent.cpp
+        MoveComponent.cpp
+        NavComponent.cpp
+        CircleComponent.cpp
+        Math.cpp
+        Random.cpp
+        Main.cpp
+        LIBS
+        SDL2_image::SDL2_image
+        ASSET_DIRS
+        Assets
+)

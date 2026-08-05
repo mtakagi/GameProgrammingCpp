@@ -17,10 +17,23 @@ Sanjay Madhav『ゲームプログラミング C++』を写経しながら進め
 
 ## 進捗
 
-| 章 | 内容 | 状態 |
-|---|---|---|
-| Chapter01 | ゲームループ、Pong | 完了 |
-| Chapter02 | ゲームオブジェクトとスプライト描画 | 実装中 |
+| 章 | 内容 | 作るもの | 状態 |
+|---|---|---|---|
+| Chapter01 | ゲームループ、SDL の初期化 | Pong | 完了 |
+| Chapter02 | ゲームオブジェクトとコンポーネント、スプライト描画・アニメーション・スクロール背景 | 横スクロール | 完了 |
+| Chapter03 | ベクトル演算、`MoveComponent` / `InputComponent`、円判定による衝突 | Asteroids | 完了 |
+| Chapter04 | A\* 経路探索、状態機械による AI、グリッドとタイル | タワーディフェンス | 実装中 |
+
+## 操作
+
+| 章 | キー / マウス |
+|---|---|
+| Chapter01 | `W` / `S` でパドル移動 |
+| Chapter02 | `W` `A` `S` `D` で移動 |
+| Chapter03 | `W` / `S` で前後、`A` / `D` で旋回、`Space` でレーザー |
+| Chapter04 | 左クリックでタイル選択、`B` で選択タイルに塔を建設 |
+
+いずれも `Esc` で終了します。
 
 ## 必要なもの
 
@@ -48,6 +61,12 @@ cmake -B build -DCMAKE_BUILD_TYPE=Debug
 cmake --build build --config Debug --parallel
 ```
 
+特定の章だけをビルドする場合は `--target` を指定します。
+
+```sh
+cmake --build build --config Debug --target Chapter04 --parallel
+```
+
 実行ファイルは `build/ChapterNN/` に出力されます。Windows では依存 DLL が、
 アセットがあればアセットも同じ場所へ自動でコピーされます。
 
@@ -61,7 +80,11 @@ cmake --build build --config Debug --parallel
 
 ```
 Chapter02/Assets/
+Chapter03/Assets/
+Chapter04/Assets/
 ```
+
+Chapter01 はテクスチャを使わないためアセット不要です。
 
 ## 動作環境
 

@@ -1,0 +1,25 @@
+add_chapter(Chapter05
+        SOURCES
+        Game.cpp
+        Actor.cpp
+        Asteroid.cpp
+        Laser.cpp
+        Ship.cpp
+        Component.cpp
+        SpriteComponent.cpp
+        MoveComponent.cpp
+        InputComponent.cpp
+        CircleComponent.cpp
+        Math.cpp
+        Random.cpp
+        Shader.cpp
+        Texture.cpp
+        VertexArray.cpp
+        Main.cpp
+        LIBS
+        GLEW::GLEW
+        SOIL::SOIL
+        ASSET_DIRS
+        Assets
+        Shaders
+)

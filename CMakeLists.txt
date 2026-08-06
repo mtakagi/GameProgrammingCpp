@@ -84,6 +84,11 @@ unset(BUILD_SHARED_LIBS)
 # 「build ディレクトリ配下のパスが混ざっている」と怒られる。BUILD_INTERFACE で包む。
 target_include_directories(glew PUBLIC "$<BUILD_INTERFACE:${glew_SOURCE_DIR}/include>")
 
+# glew.h は既定で GLU（<GL/glu.h>）を巻き込む。GLU は Linux では別パッケージ
+# （libglu1-mesa-dev）で、入っていないとインクルードエラーになる。本書は GLU を
+# 使わないので取り込みを止める。glew 自身のビルドと利用側の両方に効かせる。
+target_compile_definitions(glew PUBLIC GLEW_NO_GLU)
+
 # glew 自身が作るターゲット名は glew / glew_s で、GLEW:: 名前空間は install 時の
 # エクスポートにしか現れない。find_package(GLEW) と同じ名前で書けるようにする。
 if(NOT TARGET GLEW::GLEW)

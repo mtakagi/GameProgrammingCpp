@@ -108,6 +108,16 @@ if(MSVC)
     target_compile_definitions(SOIL PRIVATE _CRT_SECURE_NO_WARNINGS)
 endif()
 
+# macOS では SOIL が CFBundle 経由で OpenGL 拡張のアドレスを引く（SOIL.c の
+# query_DXT_capability）。SOIL 側は OpenGL しかリンクしていないため、
+# CoreFoundation のシンボルが未解決になる。
+# SOIL の CMakeLists は plain 形式の target_link_libraries を使っているので、
+# こちらも PUBLIC などのキーワードを付けずに揃える（混在はエラーになる）。
+if(APPLE)
+    find_library(COREFOUNDATION_LIBRARY CoreFoundation REQUIRED)
+    target_link_libraries(SOIL ${COREFOUNDATION_LIBRARY})
+endif()
+
 # 名前空間付きの別名を用意する。綴りを間違えたときに configure 時点で
 # 「そんなターゲットは無い」と検出されるため（:: を含む名前だけの挙動）。
 if(NOT TARGET SOIL::SOIL)

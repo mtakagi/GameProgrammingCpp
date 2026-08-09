@@ -51,6 +51,21 @@ FetchContent_Declare(
         GIT_PROGRESS TRUE
 )
 
+# RapidJSON。本書は第 6 章の .gpmesh（JSON）の読み込みに使う。
+# ヘッダーオンリーだが付属の CMakeLists はテスト・サンプル・ドキュメントのビルドや
+# GTest / Doxygen の探索まで行うので、add_subdirectory はせずヘッダーだけ取得する。
+# SOURCE_SUBDIR に存在しないディレクトリを指定すると、FetchContent_MakeAvailable は
+# 取得だけ行って add_subdirectory を省略する。
+# タグは v1.1.0（2016 年）が最後で C++17 以降の対応が入っていないため、master の
+# コミットで固定する。
+FetchContent_Declare(
+        rapidjson
+        GIT_REPOSITORY https://github.com/Tencent/rapidjson
+        GIT_TAG 24b5e7a8b27f42fa16b96fc70aade9106cf7102f
+        GIT_PROGRESS TRUE
+        SOURCE_SUBDIR do-not-add-subdirectory
+)
+
 # SOIL の CMakeLists は cmake_minimum_required(VERSION 2.6) のままで、
 # CMake 4 は 3.5 未満との互換を削除したためそのままではエラーになる。
 # 下限を引き上げて古い指定を上書きする（3.5 だと今度は非推奨警告が出るので 3.10）。
@@ -65,7 +80,7 @@ set(SDL2IMAGE_JXL OFF CACHE BOOL "" FORCE)
 set(SDL2IMAGE_TIF OFF CACHE BOOL "" FORCE)
 set(SDL2IMAGE_WEBP OFF CACHE BOOL "" FORCE)
 
-FetchContent_MakeAvailable(sdl sdl_image glew)
+FetchContent_MakeAvailable(sdl sdl_image glew rapidjson)
 
 # SOIL の add_library は STATIC / SHARED を書いていないので BUILD_SHARED_LIBS に従う。
 # SDL がキャッシュに BUILD_SHARED_LIBS=ON を残すため、放っておくと SOIL.dll になる。
@@ -82,17 +97,26 @@ unset(BUILD_SHARED_LIBS)
 # （target_include_directories は $<INSTALL_INTERFACE:...> しか設定していない）
 # glew は install(EXPORT) の対象なので、ビルドツリーの絶対パスをそのまま入れると
 # 「build ディレクトリ配下のパスが混ざっている」と怒られる。BUILD_INTERFACE で包む。
-target_include_directories(glew PUBLIC "$<BUILD_INTERFACE:${glew_SOURCE_DIR}/include>")
-
+#
 # glew.h は既定で GLU（<GL/glu.h>）を巻き込む。GLU は Linux では別パッケージ
 # （libglu1-mesa-dev）で、入っていないとインクルードエラーになる。本書は GLU を
 # 使わないので取り込みを止める。glew 自身のビルドと利用側の両方に効かせる。
-target_compile_definitions(glew PUBLIC GLEW_NO_GLU)
+#
+# glew の CMakeLists は共有版 glew と静的版 glew_s の両方を常に作るので、
+# どちらを使うことになっても良いように両方へ設定する。
+foreach(GLEW_TARGET glew glew_s)
+    target_include_directories(${GLEW_TARGET} PUBLIC "$<BUILD_INTERFACE:${glew_SOURCE_DIR}/include>")
+    target_compile_definitions(${GLEW_TARGET} PUBLIC GLEW_NO_GLU)
+endforeach()
 
-# glew 自身が作るターゲット名は glew / glew_s で、GLEW:: 名前空間は install 時の
-# エクスポートにしか現れない。find_package(GLEW) と同じ名前で書けるようにする。
+# 静的版（glew_s）を採用する。共有版だと glew32d.dll が exe の隣に置かれるが、
+# Windows の Smart App Control はローカルビルドの DLL をファイル単位で評価し、
+# 再ビルドで内容が変わるたびに未判定の新しいファイルとしてブロックすることがある
+# （STATUS_SYSTEM_INTEGRITY_POLICY_VIOLATION = 0xC0E90002 で即終了する）。
+# 静的リンクなら配布物が減り、この判定自体が発生しない。
+# glew_s は INTERFACE で GLEW_STATIC を定義するので、利用側の宣言も自動で合う。
 if(NOT TARGET GLEW::GLEW)
-    add_library(GLEW::GLEW ALIAS glew)
+    add_library(GLEW::GLEW ALIAS glew_s)
 endif()
 
 # SOIL も glew と同様にインクルードディレクトリを利用側へ伝えていない。
@@ -122,6 +146,16 @@ endif()
 # 「そんなターゲットは無い」と検出されるため（:: を含む名前だけの挙動）。
 if(NOT TARGET SOIL::SOIL)
     add_library(SOIL::SOIL ALIAS SOIL)
+endif()
+
+# RapidJSON は add_subdirectory していないのでターゲットが無い。
+# ヘッダーの位置だけを伝える INTERFACE ライブラリを自前で用意する。
+# SYSTEM を付けて、RapidJSON 側のヘッダーが出す警告を自分のビルドに持ち込まない。
+add_library(rapidjson INTERFACE)
+target_include_directories(rapidjson SYSTEM INTERFACE "${rapidjson_SOURCE_DIR}/include")
+
+if(NOT TARGET RapidJSON::RapidJSON)
+    add_library(RapidJSON::RapidJSON ALIAS rapidjson)
 endif()
 
 # 章ごとの実行ファイルを定義する。
@@ -167,3 +201,4 @@ add_subdirectory(Chapter02)
 add_subdirectory(Chapter03)
 add_subdirectory(Chapter04)
 add_subdirectory(Chapter05)
+add_subdirectory(Chapter06)

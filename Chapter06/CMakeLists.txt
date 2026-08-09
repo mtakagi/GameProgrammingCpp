@@ -1,0 +1,25 @@
+add_chapter(Chapter06
+        SOURCES
+        Game.cpp
+        Actor.cpp
+        CameraActor.cpp
+        PlaneActor.cpp
+        Component.cpp
+        SpriteComponent.cpp
+        MeshComponent.cpp
+        MoveComponent.cpp
+        Math.cpp
+        Mesh.cpp
+        Shader.cpp
+        Texture.cpp
+        Renderer.cpp
+        VertexArray.cpp
+        Main.cpp
+        LIBS
+        GLEW::GLEW
+        SOIL::SOIL
+        RapidJSON::RapidJSON
+        ASSET_DIRS
+        Assets
+        Shaders
+)

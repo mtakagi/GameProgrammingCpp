@@ -22,7 +22,10 @@ Sanjay Madhav『ゲームプログラミング C++』を写経しながら進め
 | Chapter01 | ゲームループ、SDL の初期化 | Pong | 完了 |
 | Chapter02 | ゲームオブジェクトとコンポーネント、スプライト描画・アニメーション・スクロール背景 | 横スクロール | 完了 |
 | Chapter03 | ベクトル演算、`MoveComponent` / `InputComponent`、円判定による衝突 | Asteroids | 完了 |
-| Chapter04 | A\* 経路探索、状態機械による AI、グリッドとタイル | タワーディフェンス | 実装中 |
+| Chapter04 | A\* 経路探索、状態機械による AI、グリッドとタイル | タワーディフェンス | 完了 |
+| Chapter05 | OpenGL への移行、頂点／インデックスバッファ、シェーダー、行列変換 | Asteroids（OpenGL 版） | 完了 |
+| Chapter06 | 3D 描画、ビュー・射影行列、クォータニオン回転、`.gpmesh` 読み込み、Phong シェーディング | 3D シーン | 完了 |
+| Chapter07 | FMOD Studio によるオーディオ、3D 音源、バス・スナップショット | 3D シーン + サウンド | 実装中 |
 
 ## 操作
 
@@ -32,6 +35,19 @@ Sanjay Madhav『ゲームプログラミング C++』を写経しながら進め
 | Chapter02 | `W` `A` `S` `D` で移動 |
 | Chapter03 | `W` / `S` で前後、`A` / `D` で旋回、`Space` でレーザー |
 | Chapter04 | 左クリックでタイル選択、`B` で選択タイルに塔を建設 |
+| Chapter05 | `W` / `S` で前後、`A` / `D` で旋回、`Space` でレーザー |
+| Chapter06 | `W` / `S` でカメラ前後、`A` / `D` でカメラ旋回 |
+| Chapter07 | Chapter06 の操作に加えて下記 |
+
+Chapter07 のオーディオ操作:
+
+| キー | 動作 |
+|---|---|
+| `-` / `=` | マスターバスの音量を 0.1 ずつ下げる / 上げる |
+| `E` | 効果音 `event:/Explosion2D` を再生 |
+| `M` | BGM の一時停止をトグル |
+| `R` | リバーブのスナップショットをトグル |
+| `1` / `2` | 足音のサーフェス種別を切り替え |
 
 いずれも `Esc` で終了します。
 
@@ -41,8 +57,35 @@ Sanjay Madhav『ゲームプログラミング C++』を写経しながら進め
 - C++23 対応のコンパイラ（MSVC 19.4x / GCC 13 / Clang 16 以降で確認）
 - git（依存ライブラリの取得に使用）
 
-SDL2 / SDL2_image は CMake の FetchContent がソースから取得してビルドするため、
-個別にインストールする必要はありません。
+次の依存ライブラリは CMake の FetchContent がソース（または配布アーカイブ）から
+取得してビルドするため、個別にインストールする必要はありません。
+
+| ライブラリ | 用途 | 取得方法 |
+|---|---|---|
+| SDL2 2.32.10 | ウィンドウ・入力・タイマー | git |
+| SDL2_image 2.8.12 | 画像読み込み（Chapter02〜04） | git |
+| GLEW 2.3.1 | OpenGL の拡張関数取得（Chapter05〜） | リリース版 zip |
+| SOIL | OpenGL 用の画像読み込み（Chapter05〜） | git |
+| RapidJSON | `.gpmesh` の解析（Chapter06〜） | git |
+
+### FMOD（Chapter07 以降のみ）
+
+Chapter07 のオーディオには [FMOD Studio API](https://www.fmod.com/download) が必要です。
+**再配布できないライブラリのため FetchContent では取得できません。** 各自でインストールしてください
+（個人・非商用は無償ライセンスの対象です）。
+
+`cmake/FindFMOD.cmake` が既定のインストール先を探します。別の場所に入れた場合は
+`FMOD_ROOT` で指定してください。
+
+```sh
+cmake -B build -DFMOD_ROOT="D:/SDK/FMOD Studio API Windows"
+```
+
+**FMOD が見つからない場合、Chapter07 はビルド対象から自動的に外れます。**
+他の章の確認は妨げません（CI もこの動作に依存しています）。
+
+なお書籍は FMOD 1.10 を対象にしているため、2.x では API 名が変わっています
+（`getLowLevelSystem` → `getCoreSystem`、`setParameterValue` → `setParameterByName` など）。
 
 Linux では SDL のビルドに開発パッケージが必要です:
 
@@ -82,14 +125,24 @@ cmake --build build --config Debug --target Chapter04 --parallel
 Chapter02/Assets/
 Chapter03/Assets/
 Chapter04/Assets/
+Chapter05/Assets/  Chapter05/Shaders/
+Chapter06/Assets/  Chapter06/Shaders/
+Chapter07/Assets/  Chapter07/Shaders/
 ```
 
 Chapter01 はテクスチャを使わないためアセット不要です。
+Chapter07 の `Assets/` には FMOD のバンクファイル（`Master Bank.bank`、
+`Master Bank.strings.bank`）も必要です。
 
 ## 動作環境
 
 Windows 11 + CLion（Ninja + MSVC）で開発し、GitHub Actions で
 Windows / Ubuntu / macOS の 3 環境のビルドを確認しています。
+
+CI のランナーには FMOD が無いため、**Chapter07 以降は CI でビルドされません**。
+Chapter06 までは Ubuntu ジョブが「ヘッダーが自分の使う型を自分で include しているか」を
+検出する役割を果たしていましたが（`<cstdint>` や `<algorithm>` の漏れを何度か拾っています）、
+第 7 章からはその検査が効かない点に注意してください。
 
 ## ライセンス
 

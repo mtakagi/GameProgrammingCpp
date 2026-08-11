@@ -158,6 +158,14 @@ if(NOT TARGET RapidJSON::RapidJSON)
     add_library(RapidJSON::RapidJSON ALIAS rapidjson)
 endif()
 
+# FMOD Studio API。第 7 章のオーディオで使う。
+# 再配布できないライブラリなので FetchContent では取得できず、各自がインストール
+# したものを cmake/FindFMOD.cmake で探す。見つからなくてもエラーにはしない
+# （CI のランナーには存在しないため）。Chapter07 側が FMOD_FOUND を見て
+# 自分をビルド対象に加えるかどうかを決める。
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
+find_package(FMOD)
+
 # 章ごとの実行ファイルを定義する。
 #   SOURCES     ビルド対象のソース
 #   LIBS        SDL2 以外に追加でリンクするターゲット
@@ -202,3 +210,4 @@ add_subdirectory(Chapter03)
 add_subdirectory(Chapter04)
 add_subdirectory(Chapter05)
 add_subdirectory(Chapter06)
+add_subdirectory(Chapter07)

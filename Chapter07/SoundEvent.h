@@ -3,6 +3,8 @@
 #include <string>
 #include "Math.h"
 
+class AudioSystem;
+
 class SoundEvent {
 public:
     SoundEvent();

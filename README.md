@@ -25,7 +25,9 @@ Sanjay Madhav『ゲームプログラミング C++』を写経しながら進め
 | Chapter04 | A\* 経路探索、状態機械による AI、グリッドとタイル | タワーディフェンス | 完了 |
 | Chapter05 | OpenGL への移行、頂点／インデックスバッファ、シェーダー、行列変換 | Asteroids（OpenGL 版） | 完了 |
 | Chapter06 | 3D 描画、ビュー・射影行列、クォータニオン回転、`.gpmesh` 読み込み、Phong シェーディング | 3D シーン | 完了 |
-| Chapter07 | FMOD Studio によるオーディオ、3D 音源、バス・スナップショット | 3D シーン + サウンド | 実装中 |
+| Chapter07 | FMOD Studio によるオーディオ、3D 音源、バス・スナップショット | 3D シーン + サウンド | 完了 |
+| Chapter08 | 入力システムの抽象化、キー／マウス／ゲームコントローラーの状態管理 | Asteroids（コントローラー操作） | 完了 |
+| Chapter09 | カメラ 4 種（一人称・追従・オービット・スプライン）、アンプロジェクト | 3D シーン + カメラ切り替え | 実装中 |
 
 ## 操作
 
@@ -37,7 +39,9 @@ Sanjay Madhav『ゲームプログラミング C++』を写経しながら進め
 | Chapter04 | 左クリックでタイル選択、`B` で選択タイルに塔を建設 |
 | Chapter05 | `W` / `S` で前後、`A` / `D` で旋回、`Space` でレーザー |
 | Chapter06 | `W` / `S` でカメラ前後、`A` / `D` でカメラ旋回 |
-| Chapter07 | Chapter06 の操作に加えて下記 |
+| Chapter07 | Chapter06 の操作に加えて下記のオーディオ操作 |
+| Chapter08 | **ゲームコントローラー専用。** 左スティックで移動、右スティックで機体の向き、右トリガーでレーザー |
+| Chapter09 | `1`〜`4` でカメラ切り替え、`W` `A` `S` `D` で移動、マウスで視点 |
 
 Chapter07 のオーディオ操作:
 
@@ -49,7 +53,22 @@ Chapter07 のオーディオ操作:
 | `R` | リバーブのスナップショットをトグル |
 | `1` / `2` | 足音のサーフェス種別を切り替え |
 
+Chapter09 のカメラ切り替え:
+
+| キー | カメラ |
+|---|---|
+| `1` | 一人称（マウスで視点、ライフルを保持） |
+| `2` | 追従（車の後方からバネ減衰で追いかける） |
+| `3` | オービット（**右ドラッグ**で車の周囲を回る） |
+| `4` | スプライン（Catmull-Rom 曲線に沿って自動移動） |
+
+左クリックで画面中央のレイを可視化する球を配置します。`-` / `=` の音量操作は Chapter07 と同じです。
+
 いずれも `Esc` で終了します。
+
+Chapter09 のオービットカメラは右ボタンを押しながらのドラッグを要求するため、
+ノートパソコンのタッチパッドでは操作できません（右クリックが瞬間的なタップになり、
+押しっぱなしのまま動かせないため）。外付けマウスが必要です。
 
 ## 必要なもの
 
@@ -70,7 +89,7 @@ Chapter07 のオーディオ操作:
 
 ### FMOD（Chapter07 以降のみ）
 
-Chapter07 のオーディオには [FMOD Studio API](https://www.fmod.com/download) が必要です。
+Chapter07 以降のオーディオには [FMOD Studio API](https://www.fmod.com/download) が必要です。
 **再配布できないライブラリのため FetchContent では取得できません。** 各自でインストールしてください
 （個人・非商用は無償ライセンスの対象です）。
 
@@ -81,8 +100,16 @@ Chapter07 のオーディオには [FMOD Studio API](https://www.fmod.com/downlo
 cmake -B build -DFMOD_ROOT="D:/SDK/FMOD Studio API Windows"
 ```
 
-**FMOD が見つからない場合、Chapter07 はビルド対象から自動的に外れます。**
-他の章の確認は妨げません（CI もこの動作に依存しています）。
+**FMOD が見つからない場合、その章は実行ファイルを作らず、FMOD に依存しないソースだけを
+コンパイルします。** リンクはできませんが、コンパイル検査は続きます。
+
+```
+-- Chapter09: FMOD が無いため実行ファイルは作りません（25 ファイルをコンパイル、AudioSystem.cpp;SoundEvent.cpp を除外）
+```
+
+FMOD のヘッダーが必要なのは `AudioSystem.cpp` と `SoundEvent.cpp` だけで、`AudioSystem.h` は
+FMOD の型を前方宣言しているため、残りは FMOD 無しでコンパイルできます。CI はこの動作に
+依存しています。
 
 なお書籍は FMOD 1.10 を対象にしているため、2.x では API 名が変わっています
 （`getLowLevelSystem` → `getCoreSystem`、`setParameterValue` → `setParameterByName` など）。
@@ -128,10 +155,12 @@ Chapter04/Assets/
 Chapter05/Assets/  Chapter05/Shaders/
 Chapter06/Assets/  Chapter06/Shaders/
 Chapter07/Assets/  Chapter07/Shaders/
+Chapter08/Assets/  Chapter08/Shaders/
+Chapter09/Assets/  Chapter09/Shaders/
 ```
 
 Chapter01 はテクスチャを使わないためアセット不要です。
-Chapter07 の `Assets/` には FMOD のバンクファイル（`Master Bank.bank`、
+Chapter07 と Chapter09 の `Assets/` には FMOD のバンクファイル（`Master Bank.bank`、
 `Master Bank.strings.bank`）も必要です。
 
 ## 動作環境
@@ -139,10 +168,17 @@ Chapter07 の `Assets/` には FMOD のバンクファイル（`Master Bank.bank
 Windows 11 + CLion（Ninja + MSVC）で開発し、GitHub Actions で
 Windows / Ubuntu / macOS の 3 環境のビルドを確認しています。
 
-CI のランナーには FMOD が無いため、**Chapter07 以降は CI でビルドされません**。
-Chapter06 までは Ubuntu ジョブが「ヘッダーが自分の使う型を自分で include しているか」を
-検出する役割を果たしていましたが（`<cstdint>` や `<algorithm>` の漏れを何度か拾っています）、
-第 7 章からはその検査が効かない点に注意してください。
+CI のランナーには FMOD が無いため、**FMOD を使う章は実行ファイルまで作られません**
+（コンパイルのみ）。リンクエラーや実行時の問題は CI では検出できず、ローカルのビルドが
+その役割を担います。
+
+一方、コンパイル検査は全章で効いています。Ubuntu と macOS のジョブは
+「ヘッダーが自分の使う型を自分で include しているか」を検出する役割を果たしており、
+これまでに次のような Windows だけで通ってしまう欠陥を実際に拾っています。
+
+- `<cstdint>` の漏れ（`uint8_t` が未定義に）
+- `<algorithm>` の漏れ（`std::ranges::find` が未定義に）
+- `friend class X;` を前方宣言の代わりにしていた箇所（MSVC のみ許容）
 
 ## ライセンス
 

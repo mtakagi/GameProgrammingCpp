@@ -1,11 +1,19 @@
-add_chapter(Chapter07
+add_chapter(Chapter09
         SOURCES
         Game.cpp
         Actor.cpp
-        CameraActor.cpp
+        FollowActor.cpp
+        FPSActor.cpp
         PlaneActor.cpp
+        OrbitActor.cpp
+        SplineActor.cpp
         Component.cpp
         AudioComponent.cpp
+        CameraComponent.cpp
+        FollowCamera.cpp
+        FPSCamera.cpp
+        OrbitCamera.cpp
+        SplineCamera.cpp
         SpriteComponent.cpp
         MeshComponent.cpp
         MoveComponent.cpp

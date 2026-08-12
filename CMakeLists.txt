@@ -167,18 +167,45 @@ list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 find_package(FMOD)
 
 # 章ごとの実行ファイルを定義する。
-#   SOURCES     ビルド対象のソース
-#   LIBS        SDL2 以外に追加でリンクするターゲット
-#   ASSET_DIRS  出力ディレクトリにコピーするディレクトリ名
+#   SOURCES       ビルド対象のソース
+#   FMOD_SOURCES  FMOD のヘッダーを必要とするソース
+#   LIBS          SDL2 以外に追加でリンクするターゲット
+#   FMOD_LIBS     FMOD が見つかったときだけ追加でリンクするターゲット
+#   ASSET_DIRS    出力ディレクトリにコピーするディレクトリ名
+#
+# FMOD は再配布できないため CI のランナーには存在しない。FMOD_SOURCES を指定した章は、
+# FMOD が無い環境では「実行ファイルを作らず、FMOD 非依存のソースだけをコンパイルする」
+# オブジェクトライブラリになる。リンクはできなくても、ヘッダーが自分の使う型を自分で
+# include しているか（GCC / Clang で通るか）の検査は 3 OS で続けられる。
+# 第 6 章まではこの検査で <cstdint> や <algorithm> の漏れを実際に拾っている。
 function(add_chapter NAME)
-    cmake_parse_arguments(ARG "" "" "SOURCES;LIBS;ASSET_DIRS" ${ARGN})
+    cmake_parse_arguments(ARG "" "" "SOURCES;FMOD_SOURCES;LIBS;FMOD_LIBS;ASSET_DIRS" ${ARGN})
 
-    add_executable(${NAME} ${ARG_SOURCES})
+    if(ARG_FMOD_SOURCES AND NOT FMOD_FOUND)
+        list(LENGTH ARG_SOURCES _compiled)
+        list(LENGTH ARG_FMOD_SOURCES _skipped)
+        message(STATUS
+                "${NAME}: FMOD が無いため実行ファイルは作りません"
+                "（${_compiled} ファイルをコンパイル、${ARG_FMOD_SOURCES} を除外）")
+
+        # OBJECT ライブラリはコンパイルするだけでリンクしない。
+        # target_link_libraries はインクルードパスと定義を貰うためだけに使う。
+        add_library(${NAME} OBJECT ${ARG_SOURCES})
+        target_link_libraries(${NAME} PRIVATE
+                project_options
+                SDL2::SDL2
+                ${ARG_LIBS})
+
+        return()
+    endif()
+
+    add_executable(${NAME} ${ARG_SOURCES} ${ARG_FMOD_SOURCES})
     target_link_libraries(${NAME} PRIVATE
             project_options
             SDL2::SDL2
             SDL2::SDL2main
-            ${ARG_LIBS})
+            ${ARG_LIBS}
+            ${ARG_FMOD_LIBS})
 
     # Windows は RPATH を持たないので、依存 DLL を exe の隣に置く。
     # 静的ビルドではリストが空になるので、その場合はコマンドごと消えるようにしておく。
@@ -212,3 +239,4 @@ add_subdirectory(Chapter05)
 add_subdirectory(Chapter06)
 add_subdirectory(Chapter07)
 add_subdirectory(Chapter08)
+add_subdirectory(Chapter09)

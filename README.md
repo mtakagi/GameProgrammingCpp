@@ -27,7 +27,9 @@ Sanjay Madhav『ゲームプログラミング C++』を写経しながら進め
 | Chapter06 | 3D 描画、ビュー・射影行列、クォータニオン回転、`.gpmesh` 読み込み、Phong シェーディング | 3D シーン | 完了 |
 | Chapter07 | FMOD Studio によるオーディオ、3D 音源、バス・スナップショット | 3D シーン + サウンド | 完了 |
 | Chapter08 | 入力システムの抽象化、キー／マウス／ゲームコントローラーの状態管理 | Asteroids（コントローラー操作） | 完了 |
-| Chapter09 | カメラ 4 種（一人称・追従・オービット・スプライン）、アンプロジェクト | 3D シーン + カメラ切り替え | 実装中 |
+| Chapter09 | カメラ 4 種（一人称・追従・オービット・スプライン）、アンプロジェクト | 3D シーン + カメラ切り替え | 完了 |
+| Chapter10 | 衝突判定の形状（AABB / 球 / 平面 / 線分）、交差判定、スイープ＆プルーン、レイキャスト | FPS（球を撃つ） | 完了 |
+| Chapter11 | SDL_ttf によるフォント描画、UI 画面スタック、一時停止メニューとダイアログ、HUD（照準・レーダー）、`.gptext` によるローカライズ | FPS + UI | 完了 |
 
 ## 操作
 
@@ -42,6 +44,8 @@ Sanjay Madhav『ゲームプログラミング C++』を写経しながら進め
 | Chapter07 | Chapter06 の操作に加えて下記のオーディオ操作 |
 | Chapter08 | **ゲームコントローラー専用。** 左スティックで移動、右スティックで機体の向き、右トリガーでレーザー |
 | Chapter09 | `1`〜`4` でカメラ切り替え、`W` `A` `S` `D` で移動、マウスで視点 |
+| Chapter10 | `W` `A` `S` `D` で移動、マウスで視点、左クリックで発射 |
+| Chapter11 | Chapter10 の操作に加えて `Esc` で一時停止メニュー、`1` / `2` で言語切り替え |
 
 Chapter07 のオーディオ操作:
 
@@ -64,7 +68,17 @@ Chapter09 のカメラ切り替え:
 
 左クリックで画面中央のレイを可視化する球を配置します。`-` / `=` の音量操作は Chapter07 と同じです。
 
-いずれも `Esc` で終了します。
+Chapter11 の UI 操作:
+
+| キー | 動作 |
+|---|---|
+| `Esc` | 一時停止メニューを開く（メニュー表示中は `Esc` か `Resume` ボタンで戻る） |
+| `1` / `2` | 表示言語を英語 / ロシア語に切り替える |
+
+一時停止メニューの `Quit` は確認ダイアログを開き、`OK` で終了します。
+`-` / `=` の音量操作は Chapter10 / Chapter11 でも同じです。
+
+Chapter01〜Chapter10 は `Esc` で終了します。Chapter11 だけは `Esc` が一時停止メニューになります。
 
 Chapter09 のオービットカメラは右ボタンを押しながらのドラッグを要求するため、
 ノートパソコンのタッチパッドでは操作できません（右クリックが瞬間的なタップになり、
@@ -83,6 +97,7 @@ Chapter09 のオービットカメラは右ボタンを押しながらのドラ�
 |---|---|---|
 | SDL2 2.32.10 | ウィンドウ・入力・タイマー | git |
 | SDL2_image 2.8.12 | 画像読み込み（Chapter02〜04） | git |
+| SDL2_ttf 2.24.0 | フォント描画（Chapter11） | git |
 | GLEW 2.3.1 | OpenGL の拡張関数取得（Chapter05〜） | リリース版 zip |
 | SOIL | OpenGL 用の画像読み込み（Chapter05〜） | git |
 | RapidJSON | `.gpmesh` の解析（Chapter06〜） | git |
@@ -157,11 +172,15 @@ Chapter06/Assets/  Chapter06/Shaders/
 Chapter07/Assets/  Chapter07/Shaders/
 Chapter08/Assets/  Chapter08/Shaders/
 Chapter09/Assets/  Chapter09/Shaders/
+Chapter10/Assets/  Chapter10/Shaders/
+Chapter11/Assets/  Chapter11/Shaders/
 ```
 
 Chapter01 はテクスチャを使わないためアセット不要です。
-Chapter07 と Chapter09 の `Assets/` には FMOD のバンクファイル（`Master Bank.bank`、
+Chapter07 と Chapter09〜Chapter11 の `Assets/` には FMOD のバンクファイル（`Master Bank.bank`、
 `Master Bank.strings.bank`）も必要です。
+Chapter11 はさらにフォント（`Carlito-Regular.ttf`）と文字列ファイル（`English.gptext` /
+`Russian.gptext`）を使います。どちらも書籍の `Chapter11/Assets` に含まれています。
 
 ## 動作環境
 

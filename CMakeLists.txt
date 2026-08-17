@@ -25,6 +25,24 @@ FetchContent_Declare(
         GIT_PROGRESS TRUE
 )
 
+# SDL2_ttf。第 11 章の UI で、文字列を描画してテクスチャに焼くのに使う。
+# HarfBuzz（複雑な字形整形）は本書では使わないので、サブモジュールごと取得しない。
+FetchContent_Declare(
+        sdl_ttf
+        GIT_REPOSITORY https://github.com/libsdl-org/SDL_ttf
+        GIT_TAG release-2.24.0
+        GIT_PROGRESS TRUE
+        GIT_SUBMODULES "external/freetype"
+)
+
+# SDL2_ttf は FreeType を必要とする。SDL2TTF_VENDORED の既定値は MSVC では ON、
+# それ以外では OFF で、OFF だとシステムの FreeType を探しに行く。CI のランナーには
+# 開発パッケージが入っていないため、常に同梱版をビルドさせて 3 OS で揃える。
+set(SDL2TTF_VENDORED ON CACHE BOOL "" FORCE)
+set(SDL2TTF_HARFBUZZ OFF CACHE BOOL "" FORCE)
+set(SDL2TTF_SAMPLES OFF CACHE BOOL "" FORCE)
+set(SDL2TTF_INSTALL OFF CACHE BOOL "" FORCE)
+
 # GLEW は他の 2 つと違い git リポジトリからは取得できない。
 #   - リポジトリには生成済みの include/GL/glew.h と src/glew.c が入っていない
 #     （本来 `make extensions` が OpenGL レジストリから生成する）。リリース版の
@@ -80,7 +98,7 @@ set(SDL2IMAGE_JXL OFF CACHE BOOL "" FORCE)
 set(SDL2IMAGE_TIF OFF CACHE BOOL "" FORCE)
 set(SDL2IMAGE_WEBP OFF CACHE BOOL "" FORCE)
 
-FetchContent_MakeAvailable(sdl sdl_image glew rapidjson)
+FetchContent_MakeAvailable(sdl sdl_image sdl_ttf glew rapidjson)
 
 # SOIL の add_library は STATIC / SHARED を書いていないので BUILD_SHARED_LIBS に従う。
 # SDL がキャッシュに BUILD_SHARED_LIBS=ON を残すため、放っておくと SOIL.dll になる。
@@ -241,3 +259,4 @@ add_subdirectory(Chapter07)
 add_subdirectory(Chapter08)
 add_subdirectory(Chapter09)
 add_subdirectory(Chapter10)
+add_subdirectory(Chapter11)

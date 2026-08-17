@@ -26,10 +26,11 @@ CLion からビルド・実行するのが通常。コマンドラインから�
 **MSVC の開発者環境を読み込まないと `cl.exe` が `stddef.h` を見つけられない**ので注意:
 
 ```
-cmd /c '"C:\Program Files\Microsoft Visual Studio\18\Community\VC\Auxiliary\Build\vcvars64.bat" >nul && cmake --build cmake-build-debug --target Chapter02 -j 14'
+cmd /c 'chcp 932 >nul && "C:\Program Files\Microsoft Visual Studio\18\Community\VC\Auxiliary\Build\vcvars64.bat" >nul && cmake --build cmake-build-debug --target Chapter02 -j 14'
 ```
 
-構成（configure）は環境変数なしでも通る。
+`chcp 932` は必須。**コードページ 65001（UTF-8）のままビルドするとヘッダー依存の追跡が壊れる**
+（下の「`/showIncludes` の文字コード」参照）。構成（configure）は環境変数なしでも通る。
 
 ## CMake の構成
 
@@ -56,6 +57,17 @@ cmd /c '"C:\Program Files\Microsoft Visual Studio\18\Community\VC\Auxiliary\Buil
 3. ルート `CMakeLists.txt` に `add_subdirectory(ChapterNN)` を追加する
 
 ## この環境で踏んだ問題（再発時の参照用）
+
+- **`/showIncludes` の文字コードが合わないとヘッダー依存が記録されず、古いオブジェクトが残る**
+  ninja は `cl /showIncludes` の出力行を `rules.ninja` の `msvc_deps_prefix`
+  （`メモ: インクルード ファイル:  `）と**バイト単位**で比較してヘッダー依存を拾う。
+  cl.exe はこの文字列をビルド時のコンソールコードページで出力するため、
+  CP932 でビルドすれば一致するが、**65001（UTF-8）でビルドすると UTF-8 バイト列になって一致せず、
+  そのオブジェクトの依存が 0 件で記録される**。以後ヘッダーを変更しても再コンパイルされない。
+  症状は「クラスのレイアウトが翻訳単位ごとに食い違い、無関係な場所で `0xC0000005`」。
+  確認: `ninja -C cmake-build-debug -t deps | Select-String '#deps 0,'` が何か出たら壊れている。
+  復旧: `cmake-build-debug/Chapter*/CMakeFiles/*.dir/*.obj` を消して `chcp 932` 付きで再ビルドする。
+  CLion のビルドは CP932 側なので壊れない。壊すのはコマンドラインからの UTF-8 ビルドだけ。
 
 - **Smart App Control がローカルビルドの exe をブロックする**
   `CreateProcess error=4551` / CodeIntegrity ログ ID 3077。SAC は署名とクラウド評価で

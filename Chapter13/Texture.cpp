@@ -69,6 +69,7 @@ void Texture::CreateForRendering(int width, int height, unsigned int format) {
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 }
 
-void Texture::SetActive() const {
+void Texture::SetActive(const int index) const {
+    glActiveTexture(GL_TEXTURE0 + index);
     glBindTexture(GL_TEXTURE_2D, mTextureID);
 }

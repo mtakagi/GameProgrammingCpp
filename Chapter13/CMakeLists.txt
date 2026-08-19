@@ -38,6 +38,7 @@ add_chapter(Chapter13
         FMOD_SOURCES
         AudioSystem.cpp
         SoundEvent.cpp
+        GBuffer.cpp
         LIBS
         GLEW::GLEW
         SOIL::SOIL

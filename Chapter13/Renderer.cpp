@@ -2,6 +2,7 @@
 #include <GL/glew.h>
 #include <string>
 #include "Game.h"
+#include "GBuffer.h"
 #include "Renderer.h"
 #include "Shader.h"
 #include "MeshComponent.h"
@@ -21,6 +22,7 @@ Renderer::Renderer(Game* game)
     , mScreenHeight(0.0f)
     , mMirrorBuffer(0)
     , mMirrorTexture(nullptr)
+    , mGBuffer(nullptr)
     , mWindow(nullptr)
     , mContext(nullptr) {
 }
@@ -87,6 +89,16 @@ bool Renderer::Initialize(const float screenWidth, const float screenHeight) {
         return false;
     }
 
+    mGBuffer = new GBuffer();
+    const auto width = static_cast<int>(mScreenWidth);
+    const auto height = static_cast<int>(mScreenHeight);
+
+    if (!mGBuffer->Create(width, height)) {
+        SDL_Log("Gバッファの作成に失敗しました");
+
+        return false;
+    }
+
     return true;
 }
 
@@ -124,7 +136,9 @@ void Renderer::UnloadData() {
 
 void Renderer::Draw() {
     Draw3DScene(mMirrorBuffer, mMirrorView, mProjection, 0.25f);
-    Draw3DScene(0, mView, mProjection);
+    Draw3DScene(mGBuffer->GetBufferID(), mView, mProjection, 1.0f, false);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     glDisable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
@@ -237,10 +251,10 @@ void Renderer::Draw3DScene(unsigned int framebuffer, const Matrix4 &view, const 
     glDisable(GL_BLEND);
 
     mMeshShader->SetActive();
-    mMeshShader->SetMatrixUniform("uViewProj", view * mProjection);
+    mMeshShader->SetMatrixUniform("uViewProj", view * proj);
 
     if (lit) {
-        SetLightUniforms(mMeshShader, mView);
+        SetLightUniforms(mMeshShader, view);
     }
 
     for (const auto& mc : mMeshComps) {
@@ -250,10 +264,10 @@ void Renderer::Draw3DScene(unsigned int framebuffer, const Matrix4 &view, const 
     }
 
     mSkinnedShader->SetActive();
-    mSkinnedShader->SetMatrixUniform("uViewProj", view * mProjection);
+    mSkinnedShader->SetMatrixUniform("uViewProj", view * proj);
 
     if (lit) {
-        SetLightUniforms(mSkinnedShader, mView);
+        SetLightUniforms(mSkinnedShader, view);
     }
 
     for (const auto& sk : mSkeletalMeshes) {
@@ -309,7 +323,7 @@ bool Renderer::LoadShaders() {
 
     mMeshShader = new Shader();
 
-    if (!mMeshShader->Load("Shaders/Phong.vert", "Shaders/Phong.frag")) {
+    if (!mMeshShader->Load("Shaders/Phong.vert", "Shaders/GBufferWrite.frag")) {
         return false;
     }
 
@@ -320,7 +334,7 @@ bool Renderer::LoadShaders() {
 
     mSkinnedShader = new Shader();
 
-    if (!mSkinnedShader->Load("Shaders/Skinned.vert", "Shaders/Phong.frag")) {
+    if (!mSkinnedShader->Load("Shaders/Skinned.vert", "Shaders/GBufferWrite.frag")) {
         return false;
     }
 

@@ -13,7 +13,7 @@ public:
     void CreateFromSurface(const SDL_Surface* surface);
     void CreateForRendering(int width, int height, unsigned int format);
 
-    void SetActive() const;
+    void SetActive(int index = 0) const;
 
     [[nodiscard]]
     int GetWidth() const { return mWidth; }

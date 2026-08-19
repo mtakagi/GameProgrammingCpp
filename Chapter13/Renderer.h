@@ -14,6 +14,7 @@ struct DirectionalLight {
 };
 
 class Game;
+class GBuffer;
 class Shader;
 class SpriteComponent;
 class Texture;
@@ -89,6 +90,8 @@ private:
     unsigned int mMirrorBuffer;
     Texture* mMirrorTexture;
     Matrix4 mMirrorView;
+
+    GBuffer* mGBuffer;
 
     Vector3 mAmbientLight;
     DirectionalLight mDirLight;

@@ -63,6 +63,7 @@ public:
 private:
     void Draw3DScene(unsigned int framebuffer, const Matrix4& view, const Matrix4& proj, float viewPortScale = 1.0f, bool lit = true);
     bool CreateMirrorTarget();
+    void DrawFromGBuffer();
     bool LoadShaders();
     void CreateSpriteVerts();
     void SetLightUniforms(Shader* shader, const Matrix4& view);
@@ -92,6 +93,8 @@ private:
     Matrix4 mMirrorView;
 
     GBuffer* mGBuffer;
+
+    Shader* mGGlobalShader;
 
     Vector3 mAmbientLight;
     DirectionalLight mDirLight;

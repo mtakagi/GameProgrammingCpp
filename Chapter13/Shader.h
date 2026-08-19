@@ -17,6 +17,7 @@ public:
     void SetMatrixUniforms(const char* name, const Matrix4* matrices, unsigned count) const;
     void SetVectorUniform(const char* name, const Vector3& vector) const;
     void SetFloatUniform(const char* name, float value) const;
+    void SetIntUniform(const char* name, int value) const;
 
 private:
     bool CompileShader(const std::string & fileName, GLenum shaderType, GLuint& outShader) const;

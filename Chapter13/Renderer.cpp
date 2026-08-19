@@ -23,6 +23,7 @@ Renderer::Renderer(Game* game)
     , mMirrorBuffer(0)
     , mMirrorTexture(nullptr)
     , mGBuffer(nullptr)
+    , mGGlobalShader(nullptr)
     , mWindow(nullptr)
     , mContext(nullptr) {
 }
@@ -139,6 +140,8 @@ void Renderer::Draw() {
     Draw3DScene(mGBuffer->GetBufferID(), mView, mProjection, 1.0f, false);
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    DrawFromGBuffer();
 
     glDisable(GL_DEPTH_TEST);
     glEnable(GL_BLEND);
@@ -310,6 +313,16 @@ bool Renderer::CreateMirrorTarget() {
     return true;
 }
 
+void Renderer::DrawFromGBuffer() {
+    glDisable(GL_DEPTH_TEST);
+    mGGlobalShader->SetActive();
+    mSpriteVerts->SetActive();
+    mGBuffer->SetTexturesActive();
+    SetLightUniforms(mGGlobalShader, mView);
+
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+}
+
 bool Renderer::LoadShaders() {
     mSpriteShader = new Shader();
 
@@ -342,6 +355,21 @@ bool Renderer::LoadShaders() {
     mView = Matrix4::CreateLookAt(Vector3::Zero, Vector3::UnitX, Vector3::UnitZ);
     mProjection = Matrix4::CreatePerspectiveFOV(Math::ToRadians(70.0f), mScreenWidth, mScreenHeight, 10.0f, 10000.0f);
     mMeshShader->SetMatrixUniform("uViewProj", mView * mProjection);
+
+    mGGlobalShader = new Shader();
+
+    if (!mGGlobalShader->Load("Shaders/GBufferGlobal.vert", "Shaders/GBufferGlobal.frag")) {
+        return false;
+    }
+
+    mGGlobalShader->SetActive();
+    mGGlobalShader->SetIntUniform("uGDiffuse", 0);
+    mGGlobalShader->SetIntUniform("uGNormal", 1);
+    mGGlobalShader->SetIntUniform("uGWorldPos", 2);
+
+    mGGlobalShader->SetMatrixUniform("uViewProj", viewProj);
+    const auto gbufferWorld = Matrix4::CreateScale(mScreenWidth, -mScreenHeight, 1.0f);
+    mGGlobalShader->SetMatrixUniform("uWorldTransform", gbufferWorld);
 
     return true;
 }

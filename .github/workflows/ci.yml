@@ -14,6 +14,7 @@ jobs:
   build:
     name: ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
     strategy:
       fail-fast: false
       matrix:
@@ -35,8 +36,24 @@ jobs:
             libegl1-mesa-dev libgl1-mesa-dev \
             libasound2-dev libpulse-dev libudev-dev
 
-      - name: Configure
-        run: cmake -B build -DCMAKE_BUILD_TYPE=Debug
+      # ccache。依存ライブラリ（SDL2 / SDL2_image / SDL2_ttf + FreeType /
+      # GLEW / SOIL）を毎回ゼロからビルドし直していて、README だけの変更でも
+      # 20 分近くかかっていたため導入する。
+      # Windows は既定の Visual Studio ジェネレーターが
+      # CMAKE_<LANG>_COMPILER_LAUNCHER に対応しないので対象外（元々最短のジョブ）。
+      - name: Set up ccache
+        if: runner.os != 'Windows'
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ matrix.os }}
+          max-size: 1G
 
+      - name: Configure
+        run: cmake -B build -DCMAKE_BUILD_TYPE=Debug ${{ runner.os != 'Windows' && '-DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache' || '' }}
+
+      # --parallel に数値を付けないと、Makefile ジェネレーターには数値なしの -j が渡る。
+      # GNU make の -j（引数なし）は並列数無制限で、実行可能なターゲットの数だけ
+      # コンパイラを起動するため、章が増えると Linux のランナーがメモリを使い切って
+      # cc1plus が OOM killer に殺される。明示的に数を指定する。
       - name: Build
-        run: cmake --build build --config Debug --parallel
+        run: cmake --build build --config Debug --parallel 4

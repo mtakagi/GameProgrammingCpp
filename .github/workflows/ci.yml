@@ -25,11 +25,18 @@ jobs:
 
       # SDL2 をソースからビルドするため、Linux では X11 / Wayland / オーディオの
       # 開発パッケージが必要（無いと構成は通るがビデオドライバが dummy だけになる）
+      #
+      # Ubuntu のミラーが無応答になると apt-get update が戻らなくなり、ジョブの
+      # 制限時間を丸ごと食い潰す（実際に 45 分で打ち切られた）。エラーではなく
+      # 無応答なので、Acquire::*::Timeout で見切りを付けさせる必要がある。
+      # Retries で再試行させ、それでも駄目ならステップ単位で打ち切って
+      # 残り時間をビルドに使えるようにする。
       - name: Install SDL build dependencies (Linux)
         if: runner.os == 'Linux'
+        timeout-minutes: 10
         run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends \
+          sudo apt-get update -o Acquire::Retries=3 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30
+          sudo apt-get install -y --no-install-recommends -o Acquire::Retries=3 \
             libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxi-dev \
             libxinerama-dev libxss-dev libxkbcommon-dev \
             libwayland-dev wayland-protocols \

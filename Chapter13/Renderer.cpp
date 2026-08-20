@@ -396,9 +396,7 @@ bool Renderer::LoadShaders() {
     }
 
     mSkinnedShader->SetActive();
-    mView = Matrix4::CreateLookAt(Vector3::Zero, Vector3::UnitX, Vector3::UnitZ);
-    mProjection = Matrix4::CreatePerspectiveFOV(Math::ToRadians(70.0f), mScreenWidth, mScreenHeight, 10.0f, 10000.0f);
-    mMeshShader->SetMatrixUniform("uViewProj", mView * mProjection);
+    mSkinnedShader->SetMatrixUniform("uViewProj", mView * mProjection);
 
     mGGlobalShader = new Shader();
 

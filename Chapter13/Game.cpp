@@ -283,7 +283,7 @@ void Game::LoadData() {
         a->SetRotation(q);
     }
 
-    mRenderer->SetAmbientLight(Vector3(0.2f, 0.2f, 0.2f));
+    mRenderer->SetAmbientLight(Vector3(0.4f, 0.4f, 0.4f));
     auto& dir = mRenderer->GetDirectionalLight();
     dir.mDirection = Vector3(0.0f, -70.0f, -70.0f);
     dir.mDiffuseColor = Vector3(0.78f, 0.78f, 0.78f);

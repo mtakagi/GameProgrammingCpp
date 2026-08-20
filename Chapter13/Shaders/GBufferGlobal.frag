@@ -15,7 +15,6 @@ struct DirectionalLight {
 };
 
 uniform vec3 uCameraPos;
-uniform float uSpecPower;
 uniform vec3 uAmbientLight;
 
 uniform DirectionalLight uDirLight;

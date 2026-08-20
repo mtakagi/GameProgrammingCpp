@@ -34,7 +34,7 @@ void main() {
         float dist = distance(uPointLight.mWorldPos, gbufferWorldPos);
         float intensity = smoothstep(uPointLight.mInnerRadius, uPointLight.mOuterRadius, dist);
         vec3 DiffuseColor = mix(uPointLight.mDiffuseColor, vec3(0.0, 0.0, 0.0), intensity);
-        Phong = DiffuseColor - intensity;
+        Phong = DiffuseColor * NdotL;
     }
 
     outColor = vec4(gbufferDiffuse * Phong, 1.0);

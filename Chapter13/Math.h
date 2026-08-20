@@ -80,6 +80,11 @@ public:
 
     explicit Vector2(const float x, const float y) : x(x), y(y) {}
 
+    [[nodiscard]]
+    const float* GetAsFloatPtr() const {
+        return &x;
+    }
+
     friend Vector2 operator+(const Vector2& a, const Vector2& b) {
         return Vector2(a.x + b.x, a.y + b.y);
     }
@@ -605,4 +610,9 @@ public:
 
 namespace Color {
     static const Vector3 White(1.0f, 1.0f, 1.0f);
+    static const Vector3 Red(1.0f, 0.0f, 0.0f);
+    static const Vector3 Green(0.0f, 1.0f, 0.0f);
+    static const Vector3 Blue(0.0f, 0.0f, 1.0f);
+    static const Vector3 Yellow(1.0f, 1.0f, 0.0f);
+    static const Vector3 LightPink(1.0f, 0.71f, 0.76f);
 }

@@ -8,6 +8,7 @@
 #include "MeshComponent.h"
 #include "SkeletalMeshComponent.h"
 #include "SpriteComponent.h"
+#include "PointLightComponent.h"
 #include "Texture.h"
 #include "UIScreen.h"
 #include "VertexArray.h"
@@ -24,8 +25,10 @@ Renderer::Renderer(Game* game)
     , mMirrorTexture(nullptr)
     , mGBuffer(nullptr)
     , mGGlobalShader(nullptr)
+    , mGPointLightShader(nullptr)
+    , mPointLightMesh(nullptr)
     , mWindow(nullptr)
-    , mContext(nullptr) {
+    , mContext(nullptr){
 }
 
 Renderer::~Renderer() = default;
@@ -100,6 +103,8 @@ bool Renderer::Initialize(const float screenWidth, const float screenHeight) {
         return false;
     }
 
+    mPointLightMesh = GetMesh("Assets/PointLight.gpmesh");
+
     return true;
 }
 
@@ -108,6 +113,15 @@ void Renderer::Shutdown() {
         glDeleteFramebuffers(1, &mMirrorBuffer);
         mMirrorTexture->Unload();
         delete mMirrorTexture;
+    }
+
+    if (mGBuffer != nullptr) {
+        mGBuffer->Destroy();
+        delete mGBuffer;
+    }
+
+    while (!mPointLights.empty()) {
+        delete mPointLights.back();
     }
 
     delete mSpriteVerts;
@@ -202,6 +216,15 @@ void Renderer::RemoveMeshComp(MeshComponent *mesh) {
     }
 }
 
+void Renderer::AddPointLight(PointLightComponent *pointLight) {
+    mPointLights.emplace_back(pointLight);
+}
+
+void Renderer::RemovePointLight(PointLightComponent *pointLight) {
+    const auto iter = std::ranges::find(mPointLights, pointLight);
+    mPointLights.erase(iter);
+}
+
 Texture* Renderer::GetTexture(const std::string& fileName) {
     Texture* tex = nullptr;
     const auto iter = mTextures.find(fileName);
@@ -248,6 +271,7 @@ void Renderer::Draw3DScene(unsigned int framebuffer, const Matrix4 &view, const 
     glViewport(0, 0, static_cast<int>(mScreenWidth * viewPortScale), static_cast<int>(mScreenHeight * viewPortScale));
 
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    glDepthMask(GL_TRUE);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     glEnable(GL_DEPTH_TEST);
@@ -321,6 +345,26 @@ void Renderer::DrawFromGBuffer() {
     SetLightUniforms(mGGlobalShader, mView);
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+
+    glBindFramebuffer(GL_READ_FRAMEBUFFER, mGBuffer->GetBufferID());
+    const auto width = static_cast<int>(mScreenWidth);
+    const auto height = static_cast<int>(mScreenHeight);
+    glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+
+    glEnable(GL_DEPTH_TEST);
+    glDepthMask(GL_FALSE);
+
+    mGPointLightShader->SetActive();
+    mPointLightMesh->GetVertexArray()->SetActive();
+    mGPointLightShader->SetMatrixUniform("uViewProj", mView * mProjection);
+    mGBuffer->SetTexturesActive();
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_ONE, GL_ONE);
+
+    for (const auto& point : mPointLights) {
+        point->Draw(mGPointLightShader, mPointLightMesh);
+    }
 }
 
 bool Renderer::LoadShaders() {
@@ -370,6 +414,18 @@ bool Renderer::LoadShaders() {
     mGGlobalShader->SetMatrixUniform("uViewProj", viewProj);
     const auto gbufferWorld = Matrix4::CreateScale(mScreenWidth, -mScreenHeight, 1.0f);
     mGGlobalShader->SetMatrixUniform("uWorldTransform", gbufferWorld);
+
+    mGPointLightShader = new Shader();
+
+    if (!mGPointLightShader->Load("Shaders/BasicMesh.vert", "Shaders/GBufferPointLight.frag")) {
+        return false;
+    }
+
+    mGPointLightShader->SetActive();
+    mGPointLightShader->SetIntUniform("uGDiffuse", 0);
+    mGPointLightShader->SetIntUniform("uGNormal", 1);
+    mGPointLightShader->SetIntUniform("uGWorldPos", 2);
+    mGPointLightShader->SetVector2Uniform("uScreenDimensions", Vector2(mScreenWidth, mScreenHeight));
 
     return true;
 }

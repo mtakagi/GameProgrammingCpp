@@ -18,6 +18,7 @@ public:
     void SetVectorUniform(const char* name, const Vector3& vector) const;
     void SetFloatUniform(const char* name, float value) const;
     void SetIntUniform(const char* name, int value) const;
+    void SetVector2Uniform(const char* name, const Vector2& vector) const;
 
 private:
     bool CompileShader(const std::string & fileName, GLenum shaderType, GLuint& outShader) const;

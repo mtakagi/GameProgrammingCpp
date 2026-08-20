@@ -20,6 +20,7 @@ class SpriteComponent;
 class Texture;
 class Mesh;
 class MeshComponent;
+class PointLightComponent;
 class SkeletalMeshComponent;
 
 class Renderer {
@@ -38,6 +39,9 @@ public:
 
     void AddMeshComp(MeshComponent* mesh);
     void RemoveMeshComp(MeshComponent* mesh);
+
+    void AddPointLight(PointLightComponent* pointLight);
+    void RemovePointLight(PointLightComponent* pointLight);
 
     Texture* GetTexture(const std::string& fileName);
     Mesh* GetMesh(const std::string& fileName);
@@ -95,6 +99,10 @@ private:
     GBuffer* mGBuffer;
 
     Shader* mGGlobalShader;
+    Shader* mGPointLightShader;
+
+    std::vector<PointLightComponent*> mPointLights;
+    Mesh* mPointLightMesh;
 
     Vector3 mAmbientLight;
     DirectionalLight mDirLight;

@@ -65,6 +65,11 @@ void Shader::SetIntUniform(const char *name, const int value) const {
     glUniform1i(loc, value);
 }
 
+void Shader::SetVector2Uniform(const char *name, const Vector2 &vector) const {
+    const auto loc = glGetUniformLocation(mShaderProgram, name);
+    glUniform2fv(loc, 1, vector.GetAsFloatPtr());
+}
+
 bool Shader::CompileShader(const std::string &fileName, const GLenum shaderType, GLuint &outShader) const {
     const std::ifstream shaderFile(fileName);
 

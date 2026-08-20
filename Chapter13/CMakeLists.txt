@@ -18,6 +18,7 @@ add_chapter(Chapter13
         BoxComponent.cpp
         BallMove.cpp
         TargetComponent.cpp
+        PointLightComponent.cpp
         Math.cpp
         Mesh.cpp
         Shader.cpp
